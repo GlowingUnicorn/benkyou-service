@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ec2-user/benkyou-server
+    destination: /home/ec2-user/benkyou-service
 file_exists_behavior: RETAIN
 hooks:
   ApplicationStart:
