@@ -336,8 +336,12 @@ const getPublicCourses = async (): Promise<CourseInfo[]> => {
       throw new Error();
     }
 
+    console.log({ result })
+
     return result.map(courseDataPreparator);
   } catch (err) {
+    console.log({ err })
+
     return err;
   }
 };
