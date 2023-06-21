@@ -10,13 +10,16 @@ import { authRouter } from './routers/auth.router.js';
 import { userRouter } from './routers/user.router.js';
 import { coursesRouter } from './routers/course.router.js';
 import { topicRouter } from './routers/topic.router.js';
+import compression from 'compression';
+import RateLimit from 'express-rate-limit'
 
 export const app = express();
 const PORT = process.env.EXPRESS_PORT;
+const limiter = RateLimit({ max: 600 })
 
 passport.use(jwtStrategy);
 
-app.use(express.json(), cors(), helmet(), morgan('dev'), passport.initialize());
+app.use(express.json(), cors(), helmet(), compression(), limiter, morgan('dev'), passport.initialize());
 
 app.use('/auth', authRouter);
 app.use(
