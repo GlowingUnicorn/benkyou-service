@@ -1,5 +1,7 @@
 import mariadb from 'mariadb';
 
+console.log({host: process.env.DB_HOST})
+
 const pool = mariadb.createPool({
   host: process.env.DB_HOST,
   port: +process.env.DB_PORT,

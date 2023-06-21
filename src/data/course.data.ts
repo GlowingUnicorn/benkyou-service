@@ -292,6 +292,7 @@ const getCourseAudience = async (
 };
 
 const getPublicCourses = async (): Promise<CourseInfo[]> => {
+  let conn
   try {
     const sql = `
     SELECT * FROM (
@@ -329,7 +330,11 @@ const getPublicCourses = async (): Promise<CourseInfo[]> => {
       ORDER BY r.course_upload_date DESC;
       `;
 
-    const result = (await pool.query(sql)) as CourseInfoDB[];
+    conn = await pool.getConnection()
+
+    console.log('connected')
+
+    const result = (await conn.query(sql)) as CourseInfoDB[];
 
     if (!result[0]) {
       console.log({ result })
@@ -343,6 +348,8 @@ const getPublicCourses = async (): Promise<CourseInfo[]> => {
     console.log({ err })
 
     return err;
+  } finally {
+    conn && await conn.end()
   }
 };
 
