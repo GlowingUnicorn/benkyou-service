@@ -2,8 +2,6 @@ import passportJwt from 'passport-jwt';
 import {TokenPayloadInterface} from '../interfaces/token.interface.js';
 import { tokenServices } from '../services/token.services.js';
 
-console.log(process.env)
-
 const options = {
   secretOrKey: process.env.PRIVATE_KEY,
   jwtFromRequest: passportJwt.ExtractJwt.fromAuthHeaderAsBearerToken(),
