@@ -332,6 +332,7 @@ const getPublicCourses = async (): Promise<CourseInfo[]> => {
     const result = (await pool.query(sql)) as CourseInfoDB[];
 
     if (!result[0]) {
+      console.log({ result })
       throw new Error();
     }
 
