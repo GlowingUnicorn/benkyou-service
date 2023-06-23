@@ -1,22 +1,22 @@
 import express from 'express';
-import { checkSchema } from 'express-validator';
+import {checkSchema} from 'express-validator';
 import {
   authorizeMiddleware,
   roleMiddleware,
 } from '../authentication/authorizations.js';
-import { isUserPermitted } from '../authentication/is-user-permitted.js';
-import { UserRoles } from '../common/user-roles.enum.js';
-import { courseController } from '../controllers/course.controller.js';
-import { topicController } from '../controllers/topic.controller.js';
+import {isUserPermitted} from '../authentication/is-user-permitted.js';
+import {UserRoles} from '../common/user-roles.enum.js';
+import {courseController} from '../controllers/course.controller.js';
+import {topicController} from '../controllers/topic.controller.js';
 import {
   createCourseSchema,
   enrollSchema,
   updateCourseSchema,
 } from '../validators/course.schema.js';
 import idChecker from '../validators/id.checker.js';
-import { updateCourseTopicsSchema } from '../validators/topic.schema.js';
-import { announcesRouter } from './announce.router.js';
-import { sectionsRouter } from './section.router.js';
+import {updateCourseTopicsSchema} from '../validators/topic.schema.js';
+import {announcesRouter} from './announce.router.js';
+import {sectionsRouter} from './section.router.js';
 
 export const coursesRouter = express.Router();
 
@@ -29,7 +29,7 @@ coursesRouter
     checkSchema(createCourseSchema),
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER]),
-    courseController.createCourse
+    courseController.createCourse,
   );
 
 coursesRouter
@@ -38,19 +38,19 @@ coursesRouter
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER, UserRoles.STUDENT]),
     isUserPermitted,
-    courseController.getCourse
+    courseController.getCourse,
   )
   .put(
     checkSchema(updateCourseSchema),
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER]),
     isUserPermitted,
-    courseController.updateCourse
+    courseController.updateCourse,
   )
   .delete(
     roleMiddleware([UserRoles.TEACHER]),
     isUserPermitted,
-    courseController.deleteCourse
+    courseController.deleteCourse,
   );
 
 coursesRouter
@@ -59,21 +59,21 @@ coursesRouter
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER, UserRoles.STUDENT]),
     isUserPermitted,
-    courseController.getEnrolledStudents
+    courseController.getEnrolledStudents,
   )
   .post(
     checkSchema(enrollSchema),
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER]),
     isUserPermitted,
-    courseController.enrollStudents
+    courseController.enrollStudents,
   )
   .delete(
     checkSchema(enrollSchema),
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER]),
     isUserPermitted,
-    courseController.unenrollStudents
+    courseController.unenrollStudents,
   );
 
 coursesRouter
@@ -81,12 +81,12 @@ coursesRouter
   .post(
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER, UserRoles.STUDENT]),
-    courseController.selfEnroll
+    courseController.selfEnroll,
   )
   .delete(
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER, UserRoles.STUDENT]),
-    courseController.selfUnenroll
+    courseController.selfUnenroll,
   );
 
 coursesRouter
@@ -95,7 +95,7 @@ coursesRouter
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER, UserRoles.STUDENT]),
     isUserPermitted,
-    courseController.getCourseProgress
+    courseController.getCourseProgress,
   );
 
 coursesRouter
@@ -105,7 +105,7 @@ coursesRouter
     authorizeMiddleware,
     roleMiddleware([UserRoles.TEACHER]),
     isUserPermitted,
-    topicController.updateCourseTopics
+    topicController.updateCourseTopics,
   );
 
 coursesRouter.use('/:courseId/sections/', sectionsRouter);

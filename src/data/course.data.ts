@@ -1,5 +1,5 @@
-import { UserInfoDBSafeRAW } from './../interfaces/database-interfaces/db-users.interface';
-import { UserInfoDBSafe } from './../interfaces/user-info.interface';
+import {UserInfoDBSafeRAW} from './../interfaces/database-interfaces/db-users.interface';
+import {UserInfoDBSafe} from './../interfaces/user-info.interface';
 import {
   CourseInfo,
   CourseInfoSections,
@@ -21,22 +21,22 @@ import {
   CourseSectionDBPermission,
   DeleteCourseInfo,
 } from '../interfaces/database-interfaces/db-courses.interface.js';
-import { InsertionReturn } from '../interfaces/database-interfaces/returns.interface.js';
+import {InsertionReturn} from '../interfaces/database-interfaces/returns.interface.js';
 import {
   courseDataPermissionPreparator,
   courseDataPreparator,
   courseSectionPermissionPreparator,
   courseSectionsPreparator,
 } from './common/course.methods.js';
-import { convertUTCtoSQL } from '../common/dateUTCtoSQL.js';
+import {convertUTCtoSQL} from '../common/dateUTCtoSQL.js';
 import pool from './pool.js';
-import { serviceErrors } from '../services/service.errors.js';
+import {serviceErrors} from '../services/service.errors.js';
 
 const getCourseById = async (
   courseId: number,
-  userId?: number
+  userId?: number,
 ): Promise<CourseInfoSections | undefined> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT 
@@ -84,23 +84,23 @@ const getCourseById = async (
     LEFT JOIN users u
       ON u.user_id = c.course_owner_id
     ${
-      userId
-        ? `LEFT JOIN (
+  userId ?
+    `LEFT JOIN (
       SELECT * FROM course_allowed_users
       WHERE user_id = ? AND course_id = ?
       ) as perm
-		  ON perm.course_id = c.course_id`
-        : ''
-    }
+		  ON perm.course_id = c.course_id` :
+    ''
+}
     WHERE c.course_id = ? AND c.course_isdeleted = 0
     GROUP BY c.course_id`;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await conn.query(
       sql,
-      userId
-        ? [courseId, courseId, userId, courseId, courseId]
-        : [courseId, courseId, courseId]
+      userId ?
+        [courseId, courseId, userId, courseId, courseId] :
+        [courseId, courseId, courseId],
     )) as CourseSectionDBPermission[];
     if (!result[0]) {
       return;
@@ -111,7 +111,7 @@ const getCourseById = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
@@ -181,9 +181,9 @@ const getCourseById = async (
 // };
 
 const getOwnCourses = async (
-  userId: number
+  userId: number,
 ): Promise<CourseInfo[] | undefined> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT 
@@ -234,7 +234,7 @@ const getOwnCourses = async (
   WHERE c.course_isdeleted = 0 AND c.course_owner_id = ?
   GROUP BY c.course_id;`;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await conn.query(sql, [userId])) as CourseInfoDBSections[];
 
     if (!result[0]) {
@@ -246,14 +246,14 @@ const getOwnCourses = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const getCourseOwnerId = async (
-  courseId: number
+  courseId: number,
 ): Promise<CourseOwnerInfo | null> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT course_id, course_owner_id
@@ -261,7 +261,7 @@ const getCourseOwnerId = async (
     WHERE course_id = ? AND course_isdeleted = 0;
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await conn.query(sql, [courseId])) as CourseOwnerInfoDB[];
 
     if (result[0]) {
@@ -275,12 +275,12 @@ const getCourseOwnerId = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const getCourseAudience = async (
-  courseId: number
+  courseId: number,
 ): Promise<CoursePrivacyInfo | null> => {
   try {
     const sql = `
@@ -304,7 +304,7 @@ const getCourseAudience = async (
 };
 
 const getPublicCourses = async (): Promise<CourseInfo[]> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT * FROM (
@@ -342,33 +342,33 @@ const getPublicCourses = async (): Promise<CourseInfo[]> => {
       ORDER BY r.course_upload_date DESC;
       `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
 
-    console.log('connected')
+    console.log('connected');
 
     const result = (await conn.query(sql)) as CourseInfoDB[];
 
     if (!result[0]) {
-      console.log({ result })
+      console.log({result});
       throw new Error();
     }
 
-    console.log({ result })
+    console.log({result});
 
     return result.map(courseDataPreparator);
   } catch (err) {
-    console.log({ err })
+    console.log({err});
 
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const getCoursesRegisteredUser = async (
-  userId: number
+  userId: number,
 ): Promise<CourseInfo[]> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT r.*, COALESCE(ca.is_enrolled, 0) as is_enrolled  FROM (
@@ -412,7 +412,7 @@ const getCoursesRegisteredUser = async (
     ORDER BY r.course_upload_date DESC
       `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await pool.query(sql, [
       userId,
     ])) as CourseInfoDBPermission[];
@@ -424,14 +424,14 @@ const getCoursesRegisteredUser = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const createCourse = async (
-  newCourseData: NewCourseData
+  newCourseData: NewCourseData,
 ): Promise<NewCourseDataWithID> => {
-  let conn
+  let conn;
   try {
     const sql = `
     INSERT INTO courses (
@@ -439,13 +439,13 @@ const createCourse = async (
       course_description,
       course_isprivate,
       course_owner_id${
-        newCourseData.courseDateRestriction ? ', course_date_restriction' : ''
-      })
+  newCourseData.courseDateRestriction ? ', course_date_restriction' : ''
+})
     VALUES (
       ?, ?, ?, ?${newCourseData.courseDateRestriction ? ', ?' : ''});
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await conn.query(sql, [
       newCourseData.courseTitle,
       newCourseData.courseDescription,
@@ -459,17 +459,17 @@ const createCourse = async (
       courseId: +result.insertId,
     };
   } catch (err) {
-    console.log(err)
+    console.log(err);
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const updateCourse = async (
-  updateCourseData: UpdateCourseData
+  updateCourseData: UpdateCourseData,
 ): Promise<number | UpdateCourseData> => {
-  let conn
+  let conn;
   try {
     const placeholders = [] as (string | number)[];
     const sqlSet = [] as string[];
@@ -490,7 +490,7 @@ const updateCourse = async (
           break;
         case 'courseDateRestriction':
           placeholders.push(
-            convertUTCtoSQL(updateCourseData.courseDateRestriction as string)
+            convertUTCtoSQL(updateCourseData.courseDateRestriction as string),
           );
           sqlSet.push(`course_date_restriction = ?`);
           break;
@@ -513,7 +513,7 @@ const updateCourse = async (
     WHERE course_id = ? AND course_isdeleted = 0;
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = await conn.query(sql, [
       ...placeholders,
       updateCourseData.courseId,
@@ -527,14 +527,14 @@ const updateCourse = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const deleteCourse = async (
-  deleteInfo: DeleteCourseInfo
+  deleteInfo: DeleteCourseInfo,
 ): Promise<InsertionReturn> => {
-  let conn
+  let conn;
   try {
     const sql = `
     UPDATE courses
@@ -542,22 +542,22 @@ const deleteCourse = async (
     WHERE course_id = ?;
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = await conn.query(sql, [deleteInfo.courseId]);
 
     return result;
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const getCourseProgress = async (
   userId: number,
-  courseId: number
+  courseId: number,
 ): Promise<CourseStats | null> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT 
@@ -584,7 +584,7 @@ const getCourseProgress = async (
       AND lesson_stats.user_id = ?) lesson_stats;
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await conn.query(sql, [
       courseId,
       userId,
@@ -595,9 +595,9 @@ const getCourseProgress = async (
         userId: result[0].user_id,
         courseId: result[0].course_id,
         completeLessons: result[0].complete_lessons,
-        completeLessonIds: result[0].complete_lessons
-          ? JSON.parse(result[0].complete_lesson_ids)
-          : [],
+        completeLessonIds: result[0].complete_lessons ?
+          JSON.parse(result[0].complete_lesson_ids) :
+          [],
       };
     } else {
       return {
@@ -610,15 +610,15 @@ const getCourseProgress = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const isUserEnrolled = async (
   userId: number,
-  courseId: number
+  courseId: number,
 ): Promise<boolean> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT * 
@@ -626,7 +626,7 @@ const isUserEnrolled = async (
     WHERE user_id = ? AND course_id = ?
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const enrollment = await conn.query(sql, [userId, courseId]);
 
     if (enrollment[0]) {
@@ -636,22 +636,22 @@ const isUserEnrolled = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const enrollStudent = async (
   userId: number,
-  courseId: number
+  courseId: number,
 ): Promise<PermissionsInfo> => {
-  let conn
+  let conn;
   try {
     const sql = `
     INSERT INTO course_allowed_users(user_id, course_id)
     VALUES (?, ?);
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = await conn.query(sql, [userId, courseId]);
 
     return {
@@ -661,15 +661,15 @@ const enrollStudent = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const unenrollStudent = async (
   userId: number,
-  courseId: number
+  courseId: number,
 ): Promise<PermissionsInfo> => {
-  let conn
+  let conn;
   try {
     const sql = `
     DELETE 
@@ -677,7 +677,7 @@ const unenrollStudent = async (
     WHERE user_id = ? AND course_id = ?;
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = await conn.query(sql, [userId, courseId]);
     return {
       userId: userId,
@@ -685,22 +685,22 @@ const unenrollStudent = async (
     };
   } catch (err) {
     return err;
-  }  finally {
-    if (conn) conn.release()
+  } finally {
+    if (conn) conn.release();
   }
 };
 
 const selfEnroll = async (
   userId: number,
-  courseId: number
+  courseId: number,
 ): Promise<InsertionReturn> => {
-  let conn
+  let conn;
   try {
     const sql = `
     INSERT IGNORE INTO course_allowed_users (user_id, course_id)
     VALUES (?, ?)`;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = await conn.query(sql, [userId, courseId]);
 
     if (result.hasOwnProperty('affectedRows')) {
@@ -709,23 +709,23 @@ const selfEnroll = async (
     throw new Error(result);
   } catch (err) {
     return err;
-  }  finally {
-    if (conn) conn.release()
+  } finally {
+    if (conn) conn.release();
   }
 };
 
 const selfUnenroll = async (
   userId: number,
-  courseId: number
+  courseId: number,
 ): Promise<InsertionReturn> => {
-  let conn
+  let conn;
   try {
     const sql = `
   DELETE FROM course_allowed_users
   WHERE user_id = ? AND course_id = ?;
   `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = await conn.query(sql, [userId, courseId]);
 
     if (result.hasOwnProperty('affectedRows')) {
@@ -734,15 +734,15 @@ const selfUnenroll = async (
     throw new Error(result);
   } catch (err) {
     return err;
-  }  finally {
-    if (conn) conn.release()
+  } finally {
+    if (conn) conn.release();
   }
 };
 
 const getEnrolledStudents = async (
-  courseId: number
+  courseId: number,
 ): Promise<UserInfoDBSafe[]> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT users.user_id, 
@@ -758,7 +758,7 @@ const getEnrolledStudents = async (
     AND course_allowed_users.course_id = ?;
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await conn.query(sql, [courseId])) as UserInfoDBSafeRAW[];
 
     return result.map((user) => {
@@ -775,14 +775,14 @@ const getEnrolledStudents = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const getUnenrolledStudents = async (
-  courseId: number
+  courseId: number,
 ): Promise<UserInfoDBSafe[]> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT user_id, 
@@ -801,7 +801,7 @@ const getUnenrolledStudents = async (
     AND role = 'student';
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const result = (await conn.query(sql, [courseId])) as UserInfoDBSafeRAW[];
 
     return result.map((user) => {
@@ -818,15 +818,15 @@ const getUnenrolledStudents = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
 const getEnrollmentRecord = async (
   userId: number,
-  courseId: number
+  courseId: number,
 ): Promise<PermissionsInfo> => {
-  let conn
+  let conn;
   try {
     const sql = `
     SELECT * 
@@ -834,7 +834,7 @@ const getEnrollmentRecord = async (
     WHERE user_id = ? AND course_id = ?
     `;
 
-    conn = await pool.getConnection()
+    conn = await pool.getConnection();
     const enrollment = await conn.query(sql, [userId, courseId]);
 
     if (!enrollment[0]) {
@@ -851,7 +851,7 @@ const getEnrollmentRecord = async (
   } catch (err) {
     return err;
   } finally {
-    if (conn) conn.release()
+    if (conn) conn.release();
   }
 };
 
