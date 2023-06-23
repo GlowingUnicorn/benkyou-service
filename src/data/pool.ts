@@ -9,6 +9,7 @@ const pool = mariadb.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   connectionLimit: 4,
+  socketTimeout: 100000,
 });
 
 export default pool;
