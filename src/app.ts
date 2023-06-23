@@ -21,19 +21,19 @@ passport.use(jwtStrategy);
 
 app.use(express.json(), cors(), helmet(), compression(), limiter, morgan('dev'), passport.initialize());
 
-app.use('/auth', authRouter);
+app.use('/service/auth', authRouter);
 app.use(
-  '/users',
+  '/service/users',
   (req, res, next) => authorizeMiddleware(req, res, next),
   userRouter
 );
 app.use(
-  '/courses',
+  '/service/courses',
   (req, res, next) => authorizeMiddleware(req, res, next),
   coursesRouter
 );
 app.use(
-  '/topics',
+  '/service/topics',
   (req, res, next) => authorizeMiddleware(req, res, next),
   topicRouter
 );
