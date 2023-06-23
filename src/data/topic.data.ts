@@ -4,10 +4,12 @@ import topicDataPreparator, { bigIntFieldToNumber } from './common/topic.methods
 import pool from './pool.js';
 
 const getTopics = async (): Promise<TopicInfo[]> => {
+    let conn
     try {
         const sql = `SELECT * FROM topics`;
+        conn = await pool.getConnection()
 
-        const result = (await pool.query(sql)) as TopicInfoDB[];
+        const result = (await conn.query(sql)) as TopicInfoDB[];
 
         if (!result[0]) {
             throw new Error();
@@ -15,16 +17,20 @@ const getTopics = async (): Promise<TopicInfo[]> => {
         return result.map(topicDataPreparator);
     } catch (err) {
         return err;
+    } finally {
+        if (conn) conn.release()
     }
 };
 
 const getCourseTopics = async (courseId: number): Promise<number[]> => {
+    let conn
     try {
         const sql = `
     SELECT group_CONCAT(topic_id) as topics FROM topics_courses
     WHERE course_id = ? GROUP BY course_id`;
 
-        const result = await pool.query(sql, [courseId]);
+        conn = await pool.getConnection()
+        const result = await conn.query(sql, [courseId]);
 
         if (!result[0]) {
             return [];
@@ -33,25 +39,33 @@ const getCourseTopics = async (courseId: number): Promise<number[]> => {
         return result[0].topics.split(',').map((item: string) => +item);
     } catch (err) {
         return err;
+    } finally {
+        if (conn) conn.release()
     }
 };
 
 const addCourseTopics = async (courseId: number, topics: number[]) => {
+    let conn
     try {
         const sql = `
     INSERT INTO topics_courses (topic_id, course_id)
     VALUES ${topics.map((item) => `(?, ${courseId})`).join(', ')}
     `;
 
-        const result = await pool.query(sql, [...topics]);
+        conn = await pool.getConnection()
+
+        const result = await conn.query(sql, [...topics]);
 
         return result;
     } catch (err) {
         return err;
+    } finally {
+        if (conn) conn.release()
     }
 };
 
 const deleteCourseTopics = async (courseId: number, topics: number[]) => {
+    let conn
     try {
         const sql = `
     DELETE FROM topics_courses
@@ -59,15 +73,19 @@ const deleteCourseTopics = async (courseId: number, topics: number[]) => {
       .map((item) => `topic_id = ?`)
       .join(' OR ')})`;
 
-        const result = await pool.query(sql, [courseId, ...topics]);
+        conn = await pool.getConnection()
+        const result = await conn.query(sql, [courseId, ...topics]);
 
         return result;
     } catch (err) {
         return err;
+    } finally {
+        if (conn) conn.release()
     }
 };
 
 const getMostPopularTopics = async () => {
+    let conn
     try {
         const sql = `
     SELECT
@@ -82,11 +100,14 @@ const getMostPopularTopics = async () => {
     LIMIT 6;
     `;
 
-        const result = await pool.query(sql);
+        conn = await pool.getConnection()
+        const result = await conn.query(sql);
 
         return result.map(bigIntFieldToNumber);
     } catch (err) {
         return err;
+    } finally {
+        if (conn) conn.release()
     }
 };
 
